@@ -1,0 +1,14 @@
+{
+    "name": "nekt/billing",
+    "description": "Test task for billing service implementation",
+    "type": "project",
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "Alexey Blyshko",
+            "email": "nekt@nekt.ru"
+        }
+    ],
+    "minimum-stability": "dev",
+    "require": {}
+}
