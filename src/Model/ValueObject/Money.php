@@ -61,12 +61,12 @@ class Money implements \JsonSerializable
     /**
      *  @var string дефолтная локаль отображения для форматированных денежных величин
      */
-    protected $defaultLanguage = 'ru_RU';
+    protected static $defaultLanguage = 'ru_RU';
 
     /**
      *  @var array массив переопределяемых символов валют
      */
-    protected $symbols = [
+    protected static $symbols = [
         'RUB' => 'Ք',
     ];
 
@@ -74,6 +74,9 @@ class Money implements \JsonSerializable
      *  @var \Money\Money
      */
     protected $money;
+
+    /** Ограничение прямого использования конструктора */
+    protected function __construct() {}
 
     /**
      * @param float $amount сумма
@@ -83,6 +86,22 @@ class Money implements \JsonSerializable
     public static function create($amount, $currency)
     {
         $amount = intval($amount * self::$minorCounts);
+        $money = new ParentMoney($amount, new Currency($currency));
+
+        return self::createWrapper($money);
+    }
+
+    /**
+     * Создание объекта из хранимых данных.
+     *
+     * !NB используйте с осторожностью
+     *
+     * @param float $amount сумма минорных единиц
+     * @param string $currency валюта в ISO 4217 alpha-3
+     * @return Money
+     */
+    public static function createFromRawData($amount, $currency)
+    {
         $money = new ParentMoney($amount, new Currency($currency));
 
         return self::createWrapper($money);
@@ -141,6 +160,18 @@ class Money implements \JsonSerializable
     }
 
     /**
+     *  Получить сумму для сохранения в БД
+     *
+     *  !NB используйте с осторожностью
+     *
+     *  @return string
+     */
+    public function getRawAmount()
+    {
+        return $this->money->getAmount();
+    }
+
+    /**
      *  Получить код валюты
      *  @return string валюта в ISO 4217 alpha-3
      */
@@ -169,12 +200,12 @@ class Money implements \JsonSerializable
      */
     public function format()
     {
-        $fmt = NumberFormatter::create($this->defaultLanguage, NumberFormatter::CURRENCY);
+        $fmt = NumberFormatter::create(self::$defaultLanguage, NumberFormatter::CURRENCY);
         $fmt->setTextAttribute(NumberFormatter::CURRENCY_CODE, $this->currency);
 
         // Получаем и устанавливаем в форматтер знак валюты
-        if (isset($this->symbols[$this->currency])) {
-            $symbol = $this->symbols[$this->currency];
+        if (isset(self::$symbols[$this->currency])) {
+            $symbol = self::$symbols[$this->currency];
             $fmt->setSymbol(NumberFormatter::CURRENCY_SYMBOL, $symbol);
         }
 

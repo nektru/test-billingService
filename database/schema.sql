@@ -15,14 +15,14 @@ SET client_min_messages = warning;
 SET row_security = off;
 
 --
--- Name: plpgsql; Type: EXTENSION; Schema: -; Owner: 
+-- Name: plpgsql; Type: EXTENSION; Schema: -; Owner:
 --
 
 CREATE EXTENSION IF NOT EXISTS plpgsql WITH SCHEMA pg_catalog;
 
 
 --
--- Name: EXTENSION plpgsql; Type: COMMENT; Schema: -; Owner: 
+-- Name: EXTENSION plpgsql; Type: COMMENT; Schema: -; Owner:
 --
 
 COMMENT ON EXTENSION plpgsql IS 'PL/pgSQL procedural language';
@@ -39,9 +39,9 @@ SET default_with_oids = false;
 --
 
 CREATE TABLE account (
-    user_guid character(32) NOT NULL,
+    user_uuid uuid NOT NULL,
     currency character(3) NOT NULL,
-    balance_amount integer NOT NULL
+    balance_amount integer NOT NULL DEFAULT 0
 );
 
 
@@ -52,7 +52,7 @@ ALTER TABLE account OWNER TO postgres;
 --
 
 ALTER TABLE ONLY account
-    ADD CONSTRAINT account_id PRIMARY KEY (user_guid, currency);
+    ADD CONSTRAINT account_id PRIMARY KEY (user_uuid, currency);
 
 
 --

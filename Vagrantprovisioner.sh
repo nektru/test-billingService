@@ -16,10 +16,13 @@ systemctl restart rabbitmq-server
 
 # enable remote access to postgresql
 echo "listen_addresses = '*'" >> /etc/postgresql/9.6/main/postgresql.conf
-echo "host	 all             all             192.168.33.0/24         md5" >> /etc/postgresql/9.6/main/pg_hba.conf
+echo "host	 all             all             0.0.0.0/0               md5" >> /etc/postgresql/9.6/main/pg_hba.conf
 su postgres -c "echo \"ALTER USER postgres WITH PASSWORD 'postgres';\" | psql"
+su postgres -c "echo \"CREATE DATABASE billingservice OWNER 'postgres';\" | psql"
+su postgres -c "echo \"CREATE DATABASE billingservicetest OWNER 'postgres';\" | psql"
 systemctl restart postgresql
 su postgres -c "psql s billingservice -h localhost -U postgres --password < /vagrant/database/schema.sql"
+su postgres -c "psql s billingservicetest -h localhost -U postgres --password < /vagrant/database/schema.sql"
 
 # install composer
 /vagrant/utils/installComposer.sh
