@@ -4,6 +4,7 @@
 use App\Config\AppConfig;
 use App\Config\CliConfig;
 use App\Manager\AccountManager;
+use App\Manager\QueueManager;
 use Webmozart\Console\ConsoleApplication;
 
 require_once __DIR__.'/vendor/autoload.php';
@@ -13,10 +14,14 @@ $appConfig = new AppConfig(__DIR__.'/config.ini');
 
 // Работа с аккаунтами пользователей
 $accountManager = new AccountManager($appConfig->dsn);
-$psql = new PDO($appConfig->dsn);
+
+// Работа с очередями
+$queueManager = new QueueManager();
+$queueManager->setAccountManager($accountManager);
 
 // Формирование настроек роутинга для cli
 $cliConfig = new CliConfig($appConfig->name, $appConfig->version);
+$cliConfig->setQueueManager($queueManager);
 
 // Создание и запуск приложения
 $cli = new ConsoleApplication($cliConfig);

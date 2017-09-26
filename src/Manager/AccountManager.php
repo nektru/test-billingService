@@ -3,12 +3,13 @@
 namespace App\Manager;
 
 use App\Model\ValueObject\Money;
+use App\Contract\AccountManagament;
 use App\Exception;
 
 /**
  * Класс управления аккаунтами пользователей
  */
-class AccountManager
+class AccountManager implements AccountManagament
 {
     /** @var string строка подключения к БД */
     protected $dsn;
@@ -119,7 +120,7 @@ class AccountManager
      * @param string $fromUserUUID идентификатор пользователя, у которого списываются средства
      * @param string $toUserUUID идентификатор пользователя, которому зачисляются средства
      * @param Money $money сумма к списанию
-     * @return array
+     * @return array массив балансов аккантов, участвующих в операции трансфера
      * @throws Exception\NotEnoughtMoney
      * @throws Exception\AccountNotExists ошибка отсутствия указанного аккаунта
      */
@@ -147,6 +148,7 @@ class AccountManager
             throw $e;
         }
         $dbh->commit();
+        return $balance;
     }
 
     /**
