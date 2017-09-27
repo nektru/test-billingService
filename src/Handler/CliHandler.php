@@ -35,12 +35,6 @@ class CliHandler
 
     public function startDaemon()
     {
-        // Обработка прерываний
-        $stopSignal = false;
-        pcntl_signal(SIGTERM, function () use ($stopSignal) {
-            $stopSignal = true;
-        });
-
         // Подписываемся на сообщения
         $exetuteMessage = function ($operation, $arguments) {
             try {
@@ -52,6 +46,7 @@ class CliHandler
                     'status' => 'ok',
                     'responce' => $response
                 ];
+            /// @todo отлавливать только сериализуемые исключения
             } catch (\Exception $e) {
                 return [
                     'status' => 'error',
@@ -62,11 +57,8 @@ class CliHandler
         $this->queueManager->setListener($exetuteMessage);
 
         // Основной цикл работы
-        while (!$stopSignal) {
+        while (true) {
             $this->queueManager->waitForMessages(10);
-            // Обработать системные сигналы
-            pcntl_signal_dispatch();
-            /// @todo добавить проверку на утечку памяти
         }
     }
 

@@ -106,12 +106,6 @@ class QueueManager implements AccountManagament
             $ch->wait(null, true, $timeout);
         } catch (\PhpAmqpLib\Exception\AMQPTimeoutException $e) {
             return; // Все хорошо, дождались таймаута
-        } catch (\Exception $e) {
-            if (strpos($e->getMessage(), 'Interrupted system call') !== false) {
-                /// @bug AMQPT не умеет корректно обрабатывать сигналы прерываний
-                return;
-            }
-            throw $e;
         }
         return;
     }
@@ -143,8 +137,8 @@ class QueueManager implements AccountManagament
             'userUUID' => $userUUID,
             'currency' => $currency,
         ];
-        $responce = $this->remoteCall(__FUNCTION__, $args);
-        return $responce;
+        $response = $this->remoteCall(__FUNCTION__, $args);
+        return $response;
     }
 
     public function getBalance(string $userUUID, string $currency)
@@ -153,8 +147,8 @@ class QueueManager implements AccountManagament
             'userUUID' => $userUUID,
             'currency' => $currency,
         ];
-        $responce = $this->remoteCall(__FUNCTION__, $args);
-        return $responce;
+        $response = $this->remoteCall(__FUNCTION__, $args);
+        return $response;
     }
 
     public function credit(string $userUUID, Money $money)
@@ -163,8 +157,8 @@ class QueueManager implements AccountManagament
             'userUUID' => $userUUID,
             'money' => $money,
         ];
-        $responce = $this->remoteCall(__FUNCTION__, $args);
-        return $responce;
+        $response = $this->remoteCall(__FUNCTION__, $args);
+        return $response;
     }
 
     public function debit(string $userUUID, Money $money)
@@ -173,8 +167,8 @@ class QueueManager implements AccountManagament
             'userUUID' => $userUUID,
             'money' => $money,
         ];
-        $responce = $this->remoteCall(__FUNCTION__, $args);
-        return $responce;
+        $response = $this->remoteCall(__FUNCTION__, $args);
+        return $response;
     }
 
     public function transfer(string $fromUserUUID, string $toUserUUID, Money $money)
@@ -184,8 +178,8 @@ class QueueManager implements AccountManagament
             'toUserUUID' => $toUserUUID,
             'money' => $money,
         ];
-        $responce = $this->remoteCall(__FUNCTION__, $args);
-        return $responce;
+        $response = $this->remoteCall(__FUNCTION__, $args);
+        return $response;
     }
 
     /**
