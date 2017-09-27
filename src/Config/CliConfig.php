@@ -2,16 +2,21 @@
 namespace App\Config;
 
 use Webmozart\Console\Config\DefaultApplicationConfig;
-use App\Manager\QueueManager;
+use App\Handler\CliHandler;
 
 class CliConfig extends DefaultApplicationConfig
 {
-    /** @var QueueManager */
-    protected $queueManager;
+    /** @var CliHandler */
+    protected $cliHandler;
 
-    public function setQueueManager(QueueManager $queueManager)
+    public function setCliHandler(CliHandler $cliHandler)
     {
-        $this->queueManager = $queueManager;
+        $this->cliHandler = $cliHandler;
+    }
+
+    public function getCliHandler()
+    {
+        return $this->cliHandler;
     }
 
     protected function configure()
@@ -20,9 +25,12 @@ class CliConfig extends DefaultApplicationConfig
 
         $this->beginCommand('daemon')
             ->setDescription('Запустить обработчик событий из очереди')
-            ->setHandler(function () {
-                return $this->queueManager;
-            })
-            ->setHandlerMethod('runListener');
+            ->setHandler([$this, 'getCliHandler'])
+            ->setHandlerMethod('startDaemon');
+
+        $this->beginCommand('create')
+            ->setDescription('Запустить обработчик событий из очереди')
+            ->setHandler([$this, 'getCliHandler'])
+            ->setHandlerMethod('create');
     }
 }
