@@ -104,14 +104,23 @@ class AccountManagerCest
         $uuid2 = Uuid::uuid4();
         $money = Money::USD(100);
         $transfer = Money::USD(75);
+
+        var_dump(0);
+
         $this->accountManager->createAccount($uuid1, 'USD');
         $this->accountManager->createAccount($uuid2, 'USD');
+
+        var_dump(1);
 
         $this->accountManager->credit($uuid1, $money);
         $this->accountManager->transfer($uuid1, $uuid2, $transfer);
 
+        var_dump(2);
+
         $balance1 = $this->accountManager->getBalance($uuid1, 'USD');
         $balance2 = $this->accountManager->getBalance($uuid2, 'USD');
+
+        var_dump(3);
 
         $I->assertEquals($balance1->amount, 25);
         $I->assertEquals($balance1->currency, 'USD');

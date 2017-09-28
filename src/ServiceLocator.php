@@ -46,12 +46,11 @@ class ServiceLocator
             'cliHandler' => function () {
                 return new CliHandler(
                     $this->queueManager,
-                    $this->queueHandler,
-                    new Invoker()
+                    $this->queueHandler
                 );
             },
             'queueHandler' => function () {
-                return new QueueHandler($this->accountManager);
+                return new QueueHandler($this->accountManager, new Invoker());
             },
             // Менеджер очередей
             'queueManager' => function () {
@@ -80,8 +79,7 @@ class ServiceLocator
             if (is_callable($this->services[$name])) {
                 $this->services[$name] = $this->services[$name]();
             }
-            if (is_object($this->services[$name]))
-            {
+            if (is_object($this->services[$name])) {
                 return $this->services[$name];
             }
         }

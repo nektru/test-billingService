@@ -121,12 +121,16 @@ class QueueManager implements AccountManagament
     {
         $ch = $this->channel();
         if (isset($msg->delivery_info)) {
-            $data = json_decode($msg->body, true);
-            $result = $action($data['operation'], $data['args']);
-            if (isset($data['replyTo'])) {
-                $this->sendRequest($data['replyTo'], $result);
+            try {
+                $data = json_decode($msg->body, true);
+                $result = $action($data['operation'], $data['args']);
+                if (isset($data['replyTo'])) {
+                    $this->sendRequest($data['replyTo'], $result);
+                }
+                $ch->basic_ack($msg->delivery_info['delivery_tag']);
+            } catch (\Excpetion $e) {
+                $ch->basic_nack($msg->delivery_info['delivery_tag']);
             }
-            $ch->basic_ack($msg->delivery_info['delivery_tag']);
         }
         return $result;
     }
@@ -243,7 +247,7 @@ class QueueManager implements AccountManagament
         };
 
         $ch->basic_consume($queueName, '', false, false, false, false, $receiveCallback);
-        while (!$response) {
+        while (!isset($response)) {
             $ch->wait();
         }
         return $response;

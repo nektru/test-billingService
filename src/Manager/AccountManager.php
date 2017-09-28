@@ -42,7 +42,7 @@ class AccountManager implements AccountManagament
      * Создать аккаунт в указанной валюте
      * @param string $userUUID идентификатор пользователя
      * @param string Валюта счета
-     * @return void
+     * @return bool
      */
     public function createAccount(string $userUUID, string $currency)
     {
@@ -57,6 +57,7 @@ class AccountManager implements AccountManagament
             ':user_uuid' => $userUUID,
             ':currency' => $currency,
         ]);
+        return true;
     }
 
     /**
@@ -101,9 +102,7 @@ class AccountManager implements AccountManagament
             $balance = $this->requestBalance($userUUID, $money->currency, true);
 
             if ($balance->lessThan($money)) {
-                throw new Exception\NotEnoughMoney(
-                    'User "'.$userUUID.'" have not enough money to withdraw "'.$money->format().'"'
-                );
+                throw new Exception\NotEnoughMoney($userUUID, $money);
             }
 
             $balance = $this->changeBalance('debit', $userUUID, $money);
@@ -137,9 +136,7 @@ class AccountManager implements AccountManagament
             $balance[$uuids[1]] = $this->requestBalance($uuids[1], $money->currency, true);
 
             if ($balance[$fromUserUUID]->lessThan($money)) {
-                throw new Exception\NotEnoughMoney(
-                    'User "'.$fromUserUUID.'" have not enough money to withdraw "'.$money->format().'"'
-                );
+                throw new Exception\NotEnoughMoney($fromUserUUID, $money);
             }
             $balance[$fromUserUUID] = $this->changeBalance('debit', $fromUserUUID, $money);
             $balance[$toUserUUID] = $this->changeBalance('credit', $toUserUUID, $money);
@@ -176,7 +173,7 @@ class AccountManager implements AccountManagament
         ]);
         $result = $this->fetchMoney($sth);
         if (sizeof($result) == 0) {
-            throw new Exception\AccountNotExists('Account "'.$currency.'" for "'.$userUUID.'" not exists');
+            throw new Exception\AccountNotExists($userUUID, $currency);
         } else {
             return $result[0];
         }
@@ -200,7 +197,7 @@ class AccountManager implements AccountManagament
         $sql = '
             UPDATE account
             SET balance_amount = balance_amount '.$sign.' :amount
-            WHERE  user_uuid = :user_uuid
+            WHERE user_uuid = :user_uuid
                 AND currency = :currency
             RETURNING balance_amount, currency
         ';
@@ -213,7 +210,7 @@ class AccountManager implements AccountManagament
 
         $result = $this->fetchMoney($sth);
         if (sizeof($result) == 0) {
-            throw new Exception\AccountNotExists('Account "'.$money->currency.'" for "'.$userUUID.'" not exists');
+            throw new Exception\AccountNotExists($userUUID, $money->currency);
         } else {
             return $result[0];
         }
