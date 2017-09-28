@@ -12,7 +12,7 @@ class AccountNotExists extends AppException
             'userUUID' => $userUUID,
             'currency' => $currency,
         ];
-        $msg = 'Account "'.$currency.'" for "'.$userUUID.'" not exists';
+        $msg = 'Account "'.$userUUID.'" for "'.$currency.'" not exists';
         parent::__construct($msg);
     }
 }

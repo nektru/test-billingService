@@ -66,6 +66,11 @@ class QueueHandler
         return $out;
     }
 
+    public function getBalance($userUUID, $currency)
+    {
+        return $this->accountManager->getBalance($userUUID, $currency);
+    }
+
     public function createAccount($userUUID, $currency)
     {
         return $this->accountManager->createAccount($userUUID, $currency);
@@ -85,6 +90,24 @@ class QueueHandler
             $userUUID,
             Money::create($money['amount'], $money['currency'])
         );
+    }
+
+    public function hold($userUUID, $money)
+    {
+        return $this->accountManager->hold(
+            $userUUID,
+            Money::create($money['amount'], $money['currency'])
+        );
+    }
+
+    public function assertHold($holdUUID)
+    {
+        return $this->accountManager->assertHold($holdUUID);
+    }
+
+    public function rejectHold($holdUUID)
+    {
+        return $this->accountManager->rejectHold($holdUUID);
     }
 
     public function transfer($fromUserUUID, $toUserUUID, $money)

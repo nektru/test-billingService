@@ -17,5 +17,11 @@ interface AccountManagament
 
     public function debit(string $userUUID, Money $money);
 
+    public function hold(string $userUUID, Money $money);
+
+    public function assertHold(string $holdUUID);
+
+    public function rejectHold(string $holdUUID);
+
     public function transfer(string $fromUserUUID, string $toUserUUID, Money $money);
 }

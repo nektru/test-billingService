@@ -38,6 +38,16 @@ class CliHandler
         }
     }
 
+    public function balance(Args $args, IO $io)
+    {
+        $userUUID = $args->getArgument('userUUID');
+        $currency = $args->getArgument('currency');
+
+        $io->writeLine("<b>Getting ballance for $userUUID with $currency</b>");
+        $response = $this->queueManager->getBalance($userUUID, $currency);
+        $this->processResponse($response, $io);
+    }
+
     public function credit(Args $args, IO $io)
     {
         $userUUID = $args->getArgument('userUUID');
@@ -60,6 +70,34 @@ class CliHandler
 
         $io->writeLine("<b>Debit account $userUUID with $money</b>");
         $response = $this->queueManager->debit($userUUID, $money);
+        $this->processResponse($response, $io);
+    }
+
+    public function hold(Args $args, IO $io)
+    {
+        $userUUID = $args->getArgument('userUUID');
+        $money = Money::create($args->getArgument('amount'), $args->getArgument('currency'));
+
+        $io->writeLine("<b>Hold account $userUUID with $money</b>");
+        $response = $this->queueManager->hold($userUUID, $money);
+        $this->processResponse($response, $io);
+    }
+
+    public function assertHold(Args $args, IO $io)
+    {
+        $holdUUID = $args->getArgument('holdUUID');
+
+        $io->writeLine("<b>Asserting hold $holdUUID</b>");
+        $response = $this->queueManager->assertHold($holdUUID);
+        $this->processResponse($response, $io);
+    }
+
+    public function rejectHold(Args $args, IO $io)
+    {
+        $holdUUID = $args->getArgument('holdUUID');
+
+        $io->writeLine("<b>Rejecting hold $holdUUID</b>");
+        $response = $this->queueManager->rejectHold($holdUUID);
         $this->processResponse($response, $io);
     }
 

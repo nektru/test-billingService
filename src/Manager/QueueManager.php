@@ -175,6 +175,34 @@ class QueueManager implements AccountManagament
         return $response;
     }
 
+    public function hold(string $userUUID, Money $money)
+    {
+        $args = [
+            'userUUID' => $userUUID,
+            'money' => $money,
+        ];
+        $response = $this->remoteCall(__FUNCTION__, $args);
+        return $response;
+    }
+
+    public function assertHold(string $holdUUID)
+    {
+        $args = [
+            'holdUUID' => $holdUUID,
+        ];
+        $response = $this->remoteCall(__FUNCTION__, $args);
+        return $response;
+    }
+
+    public function rejectHold(string $holdUUID)
+    {
+        $args = [
+            'holdUUID' => $holdUUID,
+        ];
+        $response = $this->remoteCall(__FUNCTION__, $args);
+        return $response;
+    }
+
     public function transfer(string $fromUserUUID, string $toUserUUID, Money $money)
     {
         $args = [

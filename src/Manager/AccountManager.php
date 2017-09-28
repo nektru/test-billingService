@@ -5,6 +5,7 @@ namespace App\Manager;
 use App\Model\ValueObject\Money;
 use App\Contract\AccountManagament;
 use App\Exception;
+use Ramsey\Uuid\Uuid;
 
 /**
  * Класс управления аккаунтами пользователей
@@ -112,6 +113,113 @@ class AccountManager implements AccountManagament
         }
         $dbh->commit();
         return $balance;
+    }
+
+    /**
+     * Заморозить деньги на счету
+     * @param string $userUUID идентификатор пользователя
+     * @param Money $money сумма к заморозке
+     * @return string идентификатор замороженных средств
+     * @throws Exception\NotEnoughtMoney
+     * @throws Exception\AccountNotExists ошибка отсутствия указанного аккаунта
+     */
+    public function hold(string $userUUID, Money $money)
+    {
+        $dbh = $this->getConnection();
+        $dbh->beginTransaction();
+        try {
+            $balance = $this->requestBalance($userUUID, $money->currency, true);
+
+            if ($balance->lessThan($money)) {
+                throw new Exception\NotEnoughMoney($userUUID, $money);
+            }
+
+            $this->changeBalance('debit', $userUUID, $money);
+            $holdUUID = $this->createHold($userUUID, $money);
+
+        } catch (\Exception $e) {
+            $dbh->rollback();
+            throw $e;
+        }
+        $dbh->commit();
+        return $holdUUID;
+    }
+
+    /**
+     * Подтвердить списание замороженных средств
+     * @param string $holdUUID идентификатор замороженных средств
+     * @return Money баланс счета
+     */
+    public function assertHold(string $holdUUID)
+    {
+        $dbh = $this->getConnection();
+        $sql = "
+            UPDATE hold set status = 'accepted'
+            WHERE hold_uuid = :hold_uuid
+                AND status = 'new'
+            RETURNING user_uuid, currency
+        ";
+        $sth = $dbh->prepare($sql);
+        $sth->execute([
+            ':hold_uuid' => $holdUUID,
+        ]);
+        $result = $sth->fetchAll(\PDO::FETCH_ASSOC);
+        if (sizeof($result) == 0) {
+            throw new Exception\HoldNotExists($holdUUID);
+        } else {
+            return $this->requestBalance($result[0]['user_uuid'], $result[0]['currency']);
+        }
+    }
+
+    /**
+     * Отклонить списание замороженных средств
+     * @param string $holdUUID идентификатор замороженных средств
+     * @return Money баланс счета
+     */
+    public function rejectHold(string $holdUUID)
+    {
+        $dbh = $this->getConnection();
+        $sql = "
+            UPDATE hold set status = 'rejected'
+            WHERE hold_uuid = :hold_uuid
+                AND status = 'new'
+            RETURNING user_uuid, currency, amount
+        ";
+        $sth = $dbh->prepare($sql);
+        $sth->execute([
+            ':hold_uuid' => $holdUUID,
+        ]);
+        $result = $sth->fetchAll(\PDO::FETCH_ASSOC);
+        if (sizeof($result) == 0) {
+            throw new Exception\HoldNotExists($holdUUID);
+        } else {
+            $money = Money::createFromRawData($result[0]['amount'], $result[0]['currency']);
+            return $this->credit($result[0]['user_uuid'], $money);
+        }
+    }
+
+    /**
+     * Создает запись о замороженных средствах
+     * @param string $userUUID
+     * @param Money $money
+     * @return string Идентификатор замороженных средств
+     */
+    protected function createHold(string $userUUID, Money $money)
+    {
+        $holdUUID = Uuid::uuid1();
+        $dbh = $this->getConnection();
+        $sql = '
+            INSERT INTO hold (hold_uuid, user_uuid, currency, amount)
+            VALUES ( :hold_uuid, :user_uuid, :currency, :amount )
+        ';
+        $sth = $dbh->prepare($sql);
+        $sth->execute([
+            ':hold_uuid' => $holdUUID,
+            ':user_uuid' => $userUUID,
+            ':currency' => $money->currency,
+            ':amount' => $money->rawAmount,
+        ]);
+        return $holdUUID;
     }
 
     /**
