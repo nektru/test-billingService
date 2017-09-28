@@ -14,7 +14,7 @@ rabbitmq-plugins enable rabbitmq_management
 echo "[{rabbit, [{loopback_users, []}]}]." > /etc/rabbitmq/rabbitmq.config
 systemctl restart rabbitmq-server
 
-# enable remote access to postgresql
+# enable remote access to postgresql and create databases
 echo "listen_addresses = '*'" >> /etc/postgresql/9.6/main/postgresql.conf
 echo "host	 all             all             0.0.0.0/0               md5" >> /etc/postgresql/9.6/main/pg_hba.conf
 su postgres -c "echo \"ALTER USER postgres WITH PASSWORD 'postgres';\" | psql"
@@ -24,11 +24,13 @@ systemctl restart postgresql
 su postgres -c "psql s billingservice -h localhost -U postgres --password < /vagrant/database/schema.sql"
 su postgres -c "psql s billingservicetest -h localhost -U postgres --password < /vagrant/database/schema.sql"
 
+# Enable supervisord config and start daemons
+cp /vagrant/utils/supervisord.conf /etc/supervisor/conf.d/billingService.conf
+systemctl restart supervisor
+
 # install composer
 /vagrant/utils/installComposer.sh
 
 # install composer packages from user
 su vagrant -c "cd /vagrant; composer install"
 
-# link vagrant dir
-#su vagrant -c "cd ~/; ln -s /vagrant"
