@@ -21,8 +21,8 @@ su postgres -c "echo \"ALTER USER postgres WITH PASSWORD 'postgres';\" | psql"
 su postgres -c "echo \"CREATE DATABASE billingservice OWNER 'postgres';\" | psql"
 su postgres -c "echo \"CREATE DATABASE billingservicetest OWNER 'postgres';\" | psql"
 systemctl restart postgresql
-su postgres -c "psql s billingservice -h localhost -U postgres --password < /vagrant/database/schema.sql"
-su postgres -c "psql s billingservicetest -h localhost -U postgres --password < /vagrant/database/schema.sql"
+su postgres -c "psql -s billingservice < /vagrant/database/schema.sql"
+su postgres -c "psql -s billingservicetest < /vagrant/database/schema.sql"
 
 # Enable supervisord config and start daemons
 cp /vagrant/utils/supervisord.conf /etc/supervisor/conf.d/billingService.conf

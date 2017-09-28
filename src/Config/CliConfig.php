@@ -61,7 +61,7 @@ class CliConfig extends DefaultApplicationConfig
             ->end()
 
             ->beginSubCommand('debit')
-                ->setDescription('Зачислить средства на указанный аккаунт')
+                ->setDescription('Списать средства с указанного аккаунта')
                 ->addArgument(
                     'userUUID',
                     Argument::REQUIRED,
@@ -82,7 +82,7 @@ class CliConfig extends DefaultApplicationConfig
                 ->setHandlerMethod('debit')
             ->end()
             ->beginSubCommand('transfer')
-                ->setDescription('Зачислить средства на указанный аккаунт')
+                ->setDescription('Перевести средства с одного аккаунта на другой')
                 ->addArgument(
                     'fromUserUUID',
                     Argument::REQUIRED,
